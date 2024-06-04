@@ -11,5 +11,14 @@ config_version=5
 [application]
 
 config/name="Airways Plugin"
+config/tags=PackedStringArray("on_work")
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/airways_plugin/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="JoltPhysics3D"
