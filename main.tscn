@@ -6,4 +6,4 @@
 
 [node name="AirWays3D" type="Node3D" parent="."]
 script = ExtResource("1_jjx0t")
-size = Vector3(2, 3, 3)
+bidirectional = null

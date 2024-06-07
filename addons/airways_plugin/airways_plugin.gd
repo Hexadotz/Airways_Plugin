@@ -2,6 +2,9 @@
 extends EditorPlugin
 
 const airWay3D_node = preload("res://addons/airways_plugin/Airway3D.gd")
+const gizmo_handle_scene = preload("res://addons/airways_plugin/gizmo_script.gd")
+
+var gizmo_handle = gizmo_handle_scene.new()
 var air_node_ref: WeakRef = weakref(null) # the reference to the air node in the scene
 var editor_UI: Control = null
 
@@ -11,6 +14,7 @@ func _enter_tree() -> void:
 	
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, editor_UI)
 	add_custom_type("AirWays3D", "MeshInstance3D", preload("res://addons/airways_plugin/Airway3D.gd"), preload("res://icon.svg"))
+	add_node_3d_gizmo_plugin(gizmo_handle)
 	
 	_make_visible(false)
 
@@ -22,6 +26,7 @@ func _exit_tree() -> void:
 	else:
 		push_error("Couldn't find the editor UI when exiting the tree")
 	
+	remove_node_3d_gizmo_plugin(gizmo_handle)
 	remove_custom_type("AirWays3D")
 
 func _handles(object: Object) -> bool:
@@ -47,18 +52,23 @@ func set_control_disabled(visible: bool) -> void:
 
 #creating a UI in the viewport editor, it's just a button for now
 func _create_Airways_control() -> HBoxContainer:
+	var Vert_sep: VSeparator = VSeparator.new()
+	
 	var build_btn: Button = Button.new()
-	build_btn.text = "Bake Navigation Area"
+	build_btn.text = "Build Navigation Area"
+	build_btn.icon = preload("res://addons/airways_plugin/icons/build.svg")
 	build_btn.flat = true
 	build_btn.connect("pressed", Callable(self, "_on_build_button_pressed"))
 	
 	var clear_btn: Button = Button.new()
 	clear_btn.text = "Clear Navigation Area"
+	clear_btn.icon = preload("res://addons/airways_plugin/icons/Clear.svg")
 	clear_btn.flat = true
 	clear_btn.connect("pressed", Callable(self, "_on_clear_button_pressed"))
 	
 	var container: HBoxContainer = HBoxContainer.new()
 	container.add_child(build_btn)
+	container.add_child(Vert_sep)
 	container.add_child(clear_btn)
 	
 	return container

@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://8ne0hnbdqku2"]
+
+[ext_resource type="Script" path="res://addons/airways_plugin/demo/debug_ghost_script.gd" id="1_8hc2w"]
+
+[node name="debug_ghost" type="CharacterBody3D"]
+script = ExtResource("1_8hc2w")
+
+[node name="head" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="head"]
