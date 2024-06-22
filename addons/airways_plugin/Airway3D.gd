@@ -258,58 +258,39 @@ func find_path(from_point: Vector3, to_point: Vector3) -> PackedVector3Array:
 
 func test() -> void:
 	#are_points_connected()
-	_save_point_data()
+	_save()
 
 func test2() -> void:
-	_load_point_data()
+	_load()
 
 #-------------------Saving/Loading----------------------#
 #NOTE: the idea here is to save the points to a file then load them whenever the node enters the tree or the editor quits
-const save_path: String = "res://addons/airways_plugin/save_data/save_data1.json"
+const save_path: String = "res://addons/airways_plugin/save_data/saved_data.save"
 
-func _save_point_data() -> void:
-	var saved_points: Array = []
-	
-	for point in point_dict.keys():
-		var point_data: Dictionary = {}
-		point_data["id"] = point_dict[point]
-		point_data["position"] = point
-		
-		saved_points.append(point_data)
-	
-	var json_data: String = JSON.stringify(saved_points, "\t")
-	
-	var file = FileAccess.open(save_path, FileAccess.WRITE)
+func _save() -> void:
+	var file: FileAccess = FileAccess.open(save_path, FileAccess.WRITE)
 	
 	if file != null:
-		file.store_string(json_data)
-		file.close()
+		#storing the point data to a file
+		file.store_var(point_dict)
 		print_rich("[color=green][b]File saved to: [/b][/color]", save_path)
 	else:
-		push_error("Cannot open save file")
+		push_error("Error saving file: ", save_path)
+	file.close()
 
-
-func _load_point_data() -> void:
-	var file = FileAccess.open(save_path, FileAccess.READ)
-	var json_reader: JSON = JSON.new()
+func _load() -> void:
+	var file: FileAccess = FileAccess.open(save_path, FileAccess.READ)
 	
 	if file != null:
-		var json_string = file.get_as_text()
+		var data = file.get_var()
+		#putting the data we loaded back the the dictionary
+		point_dict = data
 		
-		var json_data = json_reader.parse(json_string)
-		file.close()
-		if json_data == OK:
-			var data_array: Array = [] #fuck my whole life
-			for i in range(data_array.size()):
-				data_array.append(json_data[str(i)])
-			
-			print("data type: ", typeof(json_data))
-			print(data_array)
-			#print_rich("[color=green][b]File loaded successfully![/b][/color]")
-		else:
-			push_error("Error pasring file data")
+		print_rich("[color=green][b]File loaded from: [/b][/color]", save_path)
 	else:
-			push_error("Error loading file:", save_path)
+		push_error("Error loading file: ", save_path)
+	
+	file.close()
 
 #function to print to a text file instead of the console since that is making the engine bitch a lot
 func _print_large(console_text: String = "",text: String = "") -> void:
