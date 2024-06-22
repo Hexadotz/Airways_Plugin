@@ -1,8 +1,8 @@
 [gd_scene load_steps=28 format=3 uid="uid://c6ga3dueutfyr"]
 
-[ext_resource type="Script" path="res://addons/airways_plugin/Airway3D.gd" id="1_m6qpu"]
 [ext_resource type="PackedScene" uid="uid://8ne0hnbdqku2" path="res://addons/airways_plugin/demo/debug_ghost.tscn" id="2_epmic"]
 [ext_resource type="PackedScene" uid="uid://5qi5kp8pue8p" path="res://addons/airways_plugin/demo/drone.tscn" id="3_tua1o"]
+[ext_resource type="Script" path="res://addons/airways_plugin/Airway3D.gd" id="3_xwd3f"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_fxhwx"]
 size = Vector3(25, 1, 25)
@@ -81,6 +81,7 @@ size = Vector3(0.3, 0.3, 0.3)
 [node name="test_scene" type="Node3D"]
 
 [node name="mesh_convex" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -5, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="mesh_convex"]
 mesh = SubResource("BoxMesh_fxhwx")
@@ -146,7 +147,7 @@ mesh = SubResource("BoxMesh_ksxs8")
 shape = SubResource("ConvexPolygonShape3D_lc30m")
 
 [node name="mesh_concave" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, -5, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="mesh_concave"]
 mesh = SubResource("BoxMesh_fxhwx")
@@ -212,7 +213,7 @@ mesh = SubResource("BoxMesh_ksxs8")
 shape = SubResource("ConcavePolygonShape3D_jgfdi")
 
 [node name="CSG" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47, -5, 0)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="CSG"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, -0.45)
@@ -253,6 +254,24 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 11, -1)
 use_collision = true
 size = Vector3(6, 5, 19)
 
+[node name="walls" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 0)
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -7, 1)
+use_collision = true
+size = Vector3(102, 5, 97)
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.5, 2.5, 35.5)
+use_collision = true
+size = Vector3(36, 14, 8)
+
+[node name="CSGBox3D11" type="CSGBox3D" parent="walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, 12, 35.5)
+use_collision = true
+size = Vector3(24, 33, 8)
+
 [node name="Misc" type="Node3D" parent="."]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Misc"]
@@ -270,12 +289,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 4)
 mesh = SubResource("BoxMesh_0i5hn")
 skeleton = NodePath("../..")
 
-[node name="Drone" parent="." node_paths=PackedStringArray("navMap") instance=ExtResource("3_tua1o")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 1)
+[node name="Drone" parent="." node_paths=PackedStringArray("navMap", "player") instance=ExtResource("3_tua1o")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3, 1)
 navMap = NodePath("../AirWays3D")
+player = NodePath("../Misc/debug_ghost")
 
 [node name="AirWays3D" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 0)
-script = ExtResource("1_m6qpu")
-size = Vector3(26, 20, 26)
-cell_size = 2.0
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -5, 7, 0)
+script = ExtResource("3_xwd3f")
+size = Vector3(99, 21, 99)
+cell_size = 3.0

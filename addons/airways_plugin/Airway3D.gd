@@ -1,5 +1,5 @@
 @tool
-@icon("res://icon.svg")
+@icon("res://addons/airways_plugin/icons/icon_AW.svg")
 class_name AirWays3D extends Node3D
 
 ##The size of the bounding box the nodes are going to spawn in NOTE: the size will snap acording to the cell size
@@ -13,7 +13,16 @@ class_name AirWays3D extends Node3D
 ##if the agent can tracel both ways (need to to rebake the points)
 @export var bidirectional: bool = true
 
+@export var y_level: float = 0
+
+@onready var editor_viewport: Viewport = null
+@onready var viewport_cam: Camera3D = null
+
 @onready var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+
+var toggled: bool = false
+#-------------points meshes-------------------------#
+var mesh_container: Node3D = Node3D.new()
 
 var _point_material: StandardMaterial3D = StandardMaterial3D.new()
 var _point_mesh: BoxMesh = BoxMesh.new()
@@ -21,6 +30,12 @@ var _point_mesh: BoxMesh = BoxMesh.new()
 var _bounding_box_meshInstance: MeshInstance3D = MeshInstance3D.new()
 var _bounding_box_material: StandardMaterial3D = StandardMaterial3D.new()
 var _bounding_box_mesh: BoxMesh = BoxMesh.new()
+
+var debug_box_ins: MeshInstance3D = MeshInstance3D.new()
+var debug_box_mat: StandardMaterial3D = StandardMaterial3D.new()
+var debug_mesh: BoxMesh = BoxMesh.new()
+
+var green_mat = StandardMaterial3D.new()
 #--------------------------------------------------------------#
 func _ready() -> void:
 	_point_mesh.size = Vector3(0.25, 0.25, 0.25)
@@ -35,17 +50,36 @@ func _ready() -> void:
 	_bounding_box_mesh.size = size
 	
 	_bounding_box_meshInstance.mesh = _bounding_box_mesh
+	
 	add_child(_bounding_box_meshInstance)
 	
-	_spawn_points()
+	#*------------------------------------*#
+	debug_box_mat.albedo_color = Color.AQUA
+	debug_mesh.size = Vector3(0.3, 0.3, 0.3)
+	debug_mesh.material = debug_box_mat
+	debug_box_ins.mesh = debug_mesh
+	
+	green_mat.albedo_color = Color.GREEN
+	green_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	
+	add_child(debug_box_ins)
+	
+	if Engine.is_editor_hint():
+		editor_viewport = EditorInterface.get_editor_viewport_3d()
+		viewport_cam = EditorInterface.get_editor_viewport_3d().get_camera_3d()
+	
+	#_spawn_points()
+	#_connect_points()
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		size = snapped(size, Vector3(cell_size, cell_size, cell_size))
-		_bounding_box_meshInstance.mesh.size = size
 		
+		_bounding_box_meshInstance.mesh.size = size
 		_bounding_box_material.albedo_color = bounding_box_color
 		
+		if toggled:
+			_get_mouse_position_in_world()
 		#if cell_size <= 0.5:
 		#	push_warning("Warning: cell sizes less than 0.5 causes unexpected behaviour")
 
@@ -74,16 +108,18 @@ func _spawn_points() -> void:
 					#spawn the debug points
 					_spawn_debug_point(_next_step)
 				
-					#we add the point location to an array for AStar poin connection
-					point_list.append(_next_step)
+					#HACK:#we add the point location to an array for AStar poin connection
+					#point_list.append(_next_step)
+					var id: int = Astar.get_available_point_id()
+					#adding the point to our AStar map
+					Astar.add_point(id, _next_step)
+					#add the point id to the dictionary with it's position being the key
+					point_dict[_vector3_to_key(_next_step)] = id
 	
-	_add_points()
 	_connect_points()
-	#print("Points spawned in point list: ",point_list.size())
-	#print("children count after spawning: ", get_children().size() - 1)
+	#_add_points()
 
-
-#NOTE creating the objects here so we don't have to create a new one each cal of the is_ovelapping method
+#NOTE: creating the objects here so we don't have to create a new one each cal of the is_ovelapping method
 var point_param = PhysicsPointQueryParameters3D.new()
 var shape_param = PhysicsShapeQueryParameters3D.new()
 var collision_shape: BoxShape3D = BoxShape3D.new()
@@ -133,30 +169,31 @@ func _clear_debg_points() -> void:
 			child.queue_free()
 	
 	#also clear out the point list
-	point_list.clear()
 	point_dict.clear()
+
+var ray_length: float = 20
+func _get_mouse_position_in_world() -> void:
+	if Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
+		var from_point: Vector3 = viewport_cam.project_ray_origin(editor_viewport.size / 2)
+		var to_point: Vector3 = from_point + viewport_cam.project_ray_normal(editor_viewport.get_mouse_position()) * viewport_cam.global_position.y
+		
+		to_point = snapped(to_point, Vector3(cell_size, y_level, cell_size))
+		y_level = snappedf(y_level, cell_size)
+		to_point.y = y_level
+		
+		debug_box_ins.global_position = to_point
 
 #---------------------AStar logic (aka get ready for ass pounding)----------------------#
 var point_dict: Dictionary = {}
-# holds the position of the nodes that got generated
-#NOTE: still unsure if the position need to be local or global
-var point_list: Array[Vector3] = [] 
 var Astar: AStar3D = AStar3D.new()
-
-func _add_points() -> void:
-	for point: Vector3 in point_list:
-		#get the availabe point id to use it when adding points
-		var id: int = Astar.get_available_point_id()
-		#adding the point to our AStar map
-		Astar.add_point(id, point) #NOTE: the second paramater might be wrong
-		#add the point id to the dictionary with it's position being the key
-		point_dict[_vector3_to_key(point)] = id
-	
-	#print(point_dict)
 
 #turn the vector 3 to a string for the point_dict
 func _vector3_to_key(vect: Vector3) -> String:
-	return str(int(round(vect.x))) + "," + str(int(round(vect.y))) + "," + str(int(round(vect.z)))
+	var x_string: String = str(int(round(vect.x)))
+	var y_string: String = str(int(round(vect.y)))
+	var z_string: String = str(int(round(vect.z)))
+	
+	return x_string + "," + y_string + "," + z_string
 
 func _connect_points() -> void:
 	for pnt in point_dict:
@@ -177,20 +214,110 @@ func _connect_points() -> void:
 						continue
 					
 					#we put the point in a string, this point might or might not exist in our dictionary
-					var _possible_point: String = _vector3_to_key(world_position + search_offset)
+					var possible_point: String = _vector3_to_key(world_position + search_offset)
 					#if the nrighbouring point actually do exist in the dictionary we connect them
-					if point_dict.has(_possible_point):
+					if point_dict.has(possible_point):
 						#the current point we're going to connect from
 						var cur_id: int = point_dict[pnt]
 						#the point id we're connecting to
-						var next_id: int = point_dict[_possible_point]
+						var next_id: int = point_dict[possible_point]
 						
 						#if the poitns aren't connected we connect them
 						if not Astar.are_points_connected(cur_id, next_id):
+							#print("connecting ",cur_id, " with ", next_id)
 							Astar.connect_points(cur_id, next_id, bidirectional)
+							
+							#if Astar.are_points_connected(cur_id, next_id):
+							#get_child(cur_id).material_override = green_mat
+							#get_child(next_id).material_override = green_mat
 
-func find_path(from_point: Vector3, to_point: Vector3) -> Array:
+func are_points_connected() -> void:
+	var list: PackedInt64Array = Astar.get_point_ids()
+	if list.size() > 0:
+		var i: int = 1
+		for point in list:
+			if Astar.get_point_connections(point).size() > 0:
+				if get_child(i) != _bounding_box_meshInstance:
+					get_child(i).material_override = green_mat
+					
+					if i < get_child_count():
+						i += 1
+			
+			var str: String = "Point (" + str(point) + ") has connections: " + str(Astar.get_point_connections(point))
+			print(str)
+	else:
+		push_error("There are no points baked")
+
+func find_path(from_point: Vector3, to_point: Vector3) -> PackedVector3Array:
 	var start_id: int = Astar.get_closest_point(from_point)
 	var end_id: int = Astar.get_closest_point(to_point)
-	var res: Array = Astar.get_point_path(start_id, end_id)
-	return res
+	print("Start point: ", start_id, "End point: ", end_id)
+	
+	var resault: PackedVector3Array = Astar.get_point_path(start_id, end_id)
+	return resault
+
+func test() -> void:
+	#are_points_connected()
+	_save_point_data()
+
+func test2() -> void:
+	_load_point_data()
+
+#-------------------Saving/Loading----------------------#
+#NOTE: the idea here is to save the points to a file then load them whenever the node enters the tree or the editor quits
+const save_path: String = "res://addons/airways_plugin/save_data/save_data1.json"
+
+func _save_point_data() -> void:
+	var saved_points: Array = []
+	
+	for point in point_dict.keys():
+		var point_data: Dictionary = {}
+		point_data["id"] = point_dict[point]
+		point_data["position"] = point
+		
+		saved_points.append(point_data)
+	
+	var json_data: String = JSON.stringify(saved_points, "\t")
+	
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	
+	if file != null:
+		file.store_string(json_data)
+		file.close()
+		print_rich("[color=green][b]File saved to: [/b][/color]", save_path)
+	else:
+		push_error("Cannot open save file")
+
+
+func _load_point_data() -> void:
+	var file = FileAccess.open(save_path, FileAccess.READ)
+	var json_reader: JSON = JSON.new()
+	
+	if file != null:
+		var json_string = file.get_as_text()
+		
+		var json_data = json_reader.parse(json_string)
+		file.close()
+		if json_data == OK:
+			var data_array: Array = [] #fuck my whole life
+			for i in range(data_array.size()):
+				data_array.append(json_data[str(i)])
+			
+			print("data type: ", typeof(json_data))
+			print(data_array)
+			#print_rich("[color=green][b]File loaded successfully![/b][/color]")
+		else:
+			push_error("Error pasring file data")
+	else:
+			push_error("Error loading file:", save_path)
+
+#function to print to a text file instead of the console since that is making the engine bitch a lot
+func _print_large(console_text: String = "",text: String = "") -> void:
+	var file = FileAccess.open("res://addons/airways_plugin/debugs/debug_print.txt", FileAccess.WRITE)
+	
+	if file:
+		print(console_text)
+		file.store_string(text)
+		file.close()
+	else:
+		push_error("error trying to print to file")

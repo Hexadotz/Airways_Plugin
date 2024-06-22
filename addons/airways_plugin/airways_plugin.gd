@@ -4,6 +4,9 @@ extends EditorPlugin
 const airWay3D_node = preload("res://addons/airways_plugin/Airway3D.gd")
 const gizmo_handle_scene = preload("res://addons/airways_plugin/gizmo_script.gd")
 
+const node_icon: CompressedTexture2D = preload("res://addons/airways_plugin/icons/icon_AW.svg")
+const agentIcon: CompressedTexture2D = preload("res://addons/airways_plugin/icons/icon_navAgent.svg")
+
 var gizmo_handle = gizmo_handle_scene.new()
 var air_node_ref: WeakRef = weakref(null) # the reference to the air node in the scene
 var editor_UI: Control = null
@@ -13,7 +16,8 @@ func _enter_tree() -> void:
 	editor_UI = _create_Airways_control()
 	
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, editor_UI)
-	add_custom_type("AirWays3D", "MeshInstance3D", preload("res://addons/airways_plugin/Airway3D.gd"), preload("res://icon.svg"))
+	add_custom_type("AirWays3D", "Node3D", preload("res://addons/airways_plugin/Airway3D.gd"), node_icon)
+	add_custom_type("AirAgent3D", "Node", preload("res://addons/airways_plugin/AirAgent3D.gd"), agentIcon)
 	add_node_3d_gizmo_plugin(gizmo_handle)
 	
 	_make_visible(false)
@@ -28,6 +32,7 @@ func _exit_tree() -> void:
 	
 	remove_node_3d_gizmo_plugin(gizmo_handle)
 	remove_custom_type("AirWays3D")
+	remove_custom_type("AirAgent3D")
 
 func _handles(object: Object) -> bool:
 	return object is AirWays3D
@@ -50,13 +55,17 @@ func set_control_disabled(visible: bool) -> void:
 		if child is Button:
 			child.set_disabled(visible)
 
+var del_btn_ref: Button
+var add_btn_ref: Button
 #creating a UI in the viewport editor, it's just a button for now
 func _create_Airways_control() -> HBoxContainer:
-	var Vert_sep: VSeparator = VSeparator.new()
+	var Vert_sepA: VSeparator = VSeparator.new()
+	var Vert_sepB: VSeparator = VSeparator.new()
 	
 	var build_btn: Button = Button.new()
 	build_btn.text = "Build Navigation Area"
-	build_btn.icon = preload("res://addons/airways_plugin/icons/build.svg")
+	build_btn.icon = preload("res://addons/airways_plugin/icons/icon_build.svg")
+	build_btn.tooltip_text = "Build the navigation area by checking if each node point is not occupied by geometry"
 	build_btn.flat = true
 	build_btn.connect("pressed", Callable(self, "_on_build_button_pressed"))
 	
@@ -66,28 +75,82 @@ func _create_Airways_control() -> HBoxContainer:
 	clear_btn.flat = true
 	clear_btn.connect("pressed", Callable(self, "_on_clear_button_pressed"))
 	
+	var add_btn: Button = Button.new()
+	add_btn.icon = preload("res://addons/airways_plugin/icons/add_node.svg")
+	add_btn.tooltip_text = "Add a node to the region"
+	add_btn.toggle_mode = true
+	add_btn.flat = true
+	add_btn.connect("toggled", Callable(self, "_on_add_node_button_toggled"))
+	add_btn_ref = add_btn
+	
+	var delete_btn: Button = Button.new()
+	delete_btn.icon = preload("res://addons/airways_plugin/icons/remove_node.svg")
+	delete_btn.tooltip_text = "Delete a node from the existing ones"
+	delete_btn.toggle_mode = true
+	delete_btn.flat = true
+	delete_btn.connect("toggled", Callable(self, "_on_delete_node_button_toggled"))
+	del_btn_ref = delete_btn
+	
+	var test_btn: Button = Button.new()
+	test_btn.text = "test"
+	test_btn.connect("pressed", Callable(self, "_on_test_btn_pressed"))
+	
+	var test_btn2: Button = Button.new()
+	test_btn2.text = "test2"
+	test_btn2.connect("pressed", Callable(self, "_on_test_btn2_pressed"))
+	
+	var options: OptionButton = OptionButton.new()
+	options.add_item("option A")
+	
+	
 	var container: HBoxContainer = HBoxContainer.new()
 	container.add_child(build_btn)
-	container.add_child(Vert_sep)
 	container.add_child(clear_btn)
+	
+	container.add_child(Vert_sepA)
+	
+	container.add_child(add_btn)
+	container.add_child(delete_btn)
+	
+	container.add_child(Vert_sepB)
+	
+	container.add_child(test_btn)
+	container.add_child(test_btn2)
+	#container.add_child(options)
 	
 	return container
 
+func _apply_node_change(method: String, arg: Array = []) -> void:
+	var air_node = air_node_ref.get_ref()
+	#if there's no airway nodes in the scene don't bother
+	if not air_node is AirWays3D:
+		push_error("Couldn't find an air node in scene")
+		return 
+	
+	if air_node.has_method(method):
+		air_node.call(method)
+	elif air_node.get(method) != null:
+		air_node.set(method, arg[0])
+	else:
+		push_error("Method/property does not exist")
+
 func _on_build_button_pressed() -> void:
 	#_set_control_disabled(true) #disable the user from spamming the button after pressing it
-	var air_node = air_node_ref.get_ref()
-	#if there's no airway nodes in the scene don't bother
-	if not air_node is AirWays3D:
-		push_error("Couldn't find an air node in scene")
-		return
-	
-	air_node._spawn_points()
+	_apply_node_change("_spawn_points")
 
 func _on_clear_button_pressed() -> void:
-	var air_node = air_node_ref.get_ref()
-	#if there's no airway nodes in the scene don't bother
-	if not air_node is AirWays3D:
-		push_error("Couldn't find an air node in scene")
-		return
-	
-	air_node._clear_debg_points()
+	_apply_node_change("_clear_debg_points")
+
+func _on_delete_node_button_toggled(toggled_on: bool) -> void:
+	add_btn_ref.button_pressed = false
+	_apply_node_change("toggled", [del_btn_ref.button_pressed])
+
+func _on_add_node_button_toggled(toggled_on: bool) -> void:
+	del_btn_ref.button_pressed = false
+	_apply_node_change("toggled", [add_btn_ref.button_pressed])
+
+func _on_test_btn_pressed() -> void:
+	_apply_node_change("test")
+
+func _on_test_btn2_pressed() -> void:
+	_apply_node_change("test2")
