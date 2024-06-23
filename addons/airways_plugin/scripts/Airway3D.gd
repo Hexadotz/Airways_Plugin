@@ -12,11 +12,16 @@ class_name AirWays3D extends Node3D
 @export var show_debug_nodes: bool = true
 ##if the agent can tracel both ways (need to to rebake the points)
 @export var bidirectional: bool = true
+##The physics layer the node scans, use this to execlude objects you don't want the node to consider "terrain"
+##For an example you don't want this node to collide with props in the level
+@export_flags_3d_physics var collision_mask
 
 @export var y_level: float = 0
 
 @onready var editor_viewport: Viewport = null
 @onready var viewport_cam: Camera3D = null
+
+@onready var point_container
 
 @onready var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 
@@ -68,8 +73,8 @@ func _ready() -> void:
 		editor_viewport = EditorInterface.get_editor_viewport_3d()
 		viewport_cam = EditorInterface.get_editor_viewport_3d().get_camera_3d()
 	
-	#_spawn_points()
-	#_connect_points()
+	_load()
+	_connect_points(true)
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
@@ -80,9 +85,11 @@ func _process(delta: float) -> void:
 		
 		if toggled:
 			_get_mouse_position_in_world()
+		
 		#if cell_size <= 0.5:
 		#	push_warning("Warning: cell sizes less than 0.5 causes unexpected behaviour")
 
+var point_conatiner: Node3D = Node3D.new()
 func _spawn_points() -> void:
 	var offset: Vector3 = Vector3(cell_size / 2, cell_size / 2, cell_size / 2) #this variables is made to set the offset so all of nodes are within the box
 	var aabb: AABB = AABB(-size / 2, size) * global_transform
@@ -96,6 +103,7 @@ func _spawn_points() -> void:
 	
 	_clear_debg_points()
 	
+	var id: int = 0
 	#print("children count before spawning: ", get_children().size() - 1)
 	#spawning the nodes, each for loop represent an axis we fill z then y than x
 	for x: float in x_steps:
@@ -103,6 +111,7 @@ func _spawn_points() -> void:
 			for z: float in z_steps:
 				#the location the next point is going to spawn in
 				var _next_step: Vector3 = -(start_point + Vector3(x * cell_size, y * cell_size, z * cell_size))
+				#var _rounded_step = Vector3 = snapped(_next_step, Vector3())
 				
 				if not _is_overlapping(_next_step):
 					#spawn the debug points
@@ -110,14 +119,17 @@ func _spawn_points() -> void:
 				
 					#HACK:#we add the point location to an array for AStar poin connection
 					#point_list.append(_next_step)
-					var id: int = Astar.get_available_point_id()
+					#var id: int = Astar.get_available_point_id()
+					
 					#adding the point to our AStar map
 					Astar.add_point(id, _next_step)
+					id += 1
+					
 					#add the point id to the dictionary with it's position being the key
 					point_dict[_vector3_to_key(_next_step)] = id
 	
 	_connect_points()
-	#_add_points()
+
 
 #NOTE: creating the objects here so we don't have to create a new one each cal of the is_ovelapping method
 var point_param = PhysicsPointQueryParameters3D.new()
@@ -195,7 +207,10 @@ func _vector3_to_key(vect: Vector3) -> String:
 	
 	return x_string + "," + y_string + "," + z_string
 
-func _connect_points() -> void:
+func _connect_points(loaded: bool = false) -> void:
+	if loaded:
+		_load_points()
+	
 	for pnt in point_dict:
 		#since the key for the dict is a string  we wplit each number and put all of them in an array
 		var node_pos_str: Array = pnt.split(",")
@@ -203,6 +218,7 @@ func _connect_points() -> void:
 		var world_position: Vector3 = Vector3(float(node_pos_str[0]), float(node_pos_str[1]), float(node_pos_str[2]))
 		#an array that holds the distance the node is going to look for
 		var offset_cord: Array = [-cell_size, 0, cell_size]
+		
 		
 		#each axis can go -1 0 1 so this gives all the possible direction a node can point to
 		for y in offset_cord:
@@ -227,37 +243,36 @@ func _connect_points() -> void:
 							#print("connecting ",cur_id, " with ", next_id)
 							Astar.connect_points(cur_id, next_id, bidirectional)
 							
-							#if Astar.are_points_connected(cur_id, next_id):
-							#get_child(cur_id).material_override = green_mat
-							#get_child(next_id).material_override = green_mat
+							if get_child(cur_id) != _bounding_box_meshInstance and get_child(next_id) != _bounding_box_meshInstance:
+								#print("coloring")
+								get_child(cur_id).material_override = green_mat
+								get_child(next_id).material_override = green_mat
+							else:
+								print("worng")
+	
+	#saving the points that got baked
+	print_rich("[color=green]Points baked![b][/b][/color]")
+	#_save()
 
-func are_points_connected() -> void:
-	var list: PackedInt64Array = Astar.get_point_ids()
-	if list.size() > 0:
-		var i: int = 1
-		for point in list:
-			if Astar.get_point_connections(point).size() > 0:
-				if get_child(i) != _bounding_box_meshInstance:
-					get_child(i).material_override = green_mat
-					
-					if i < get_child_count():
-						i += 1
-			
-			var str: String = "Point (" + str(point) + ") has connections: " + str(Astar.get_point_connections(point))
-			print(str)
-	else:
-		push_error("There are no points baked")
+func _load_points() -> void:
+	for point in point_dict:
+		var node_pos_str: Array = point.split(",")
+		var world_position: Vector3 = Vector3(float(node_pos_str[0]), float(node_pos_str[1]), float(node_pos_str[2]))
+		
+		Astar.add_point(point_dict[point], world_position)
 
 func find_path(from_point: Vector3, to_point: Vector3) -> PackedVector3Array:
 	var start_id: int = Astar.get_closest_point(from_point)
 	var end_id: int = Astar.get_closest_point(to_point)
-	print("Start point: ", start_id, "End point: ", end_id)
+	print("Start point id: ", start_id, " - End point id: ", end_id)
+	
+	print("Start poin is connected to: ", Astar.get_point_connections(start_id))
+	print("End poin is connected to: ", Astar.get_point_connections(end_id))
 	
 	var resault: PackedVector3Array = Astar.get_point_path(start_id, end_id)
 	return resault
 
 func test() -> void:
-	#are_points_connected()
 	_save()
 
 func test2() -> void:
@@ -276,29 +291,34 @@ func _save() -> void:
 		print_rich("[color=green][b]File saved to: [/b][/color]", save_path)
 	else:
 		push_error("Error saving file: ", save_path)
+	
 	file.close()
 
 func _load() -> void:
 	var file: FileAccess = FileAccess.open(save_path, FileAccess.READ)
 	
-	if file != null:
-		var data = file.get_var()
-		#putting the data we loaded back the the dictionary
-		point_dict = data
-		
-		print_rich("[color=green][b]File loaded from: [/b][/color]", save_path)
+	if FileAccess.file_exists(save_path):
+		if file != null:
+			var data: Dictionary = file.get_var()
+			_print_large("text printed", str(data))
+			#putting the data we loaded back the the dictionary
+			point_dict = data
+			
+			print_rich("[color=green][b]File loaded from: [/b][/color]", save_path)
+		else:
+			push_error("Error loading file: ", save_path)
 	else:
-		push_error("Error loading file: ", save_path)
+		push_error("Couldn't file file: ", save_path)
 	
 	file.close()
 
 #function to print to a text file instead of the console since that is making the engine bitch a lot
-func _print_large(console_text: String = "",text: String = "") -> void:
+func _print_large(console_text: String = "", data = null) -> void:
 	var file = FileAccess.open("res://addons/airways_plugin/debugs/debug_print.txt", FileAccess.WRITE)
 	
 	if file:
 		print(console_text)
-		file.store_string(text)
+		file.store_string(data)
 		file.close()
 	else:
 		push_error("error trying to print to file")

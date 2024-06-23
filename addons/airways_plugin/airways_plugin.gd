@@ -1,7 +1,8 @@
 @tool
 extends EditorPlugin
 
-const airWay3D_node = preload("res://addons/airways_plugin/Airway3D.gd")
+const airWay3D_node = preload("res://addons/airways_plugin/scripts/Airway3D.gd")
+const airAgent3D_node = preload("res://addons/airways_plugin/scripts/AirAgent3D.gd")
 const gizmo_handle_scene = preload("res://addons/airways_plugin/gizmo_script.gd")
 
 const node_icon: CompressedTexture2D = preload("res://addons/airways_plugin/icons/icon_AW.svg")
@@ -16,8 +17,8 @@ func _enter_tree() -> void:
 	editor_UI = _create_Airways_control()
 	
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, editor_UI)
-	add_custom_type("AirWays3D", "Node3D", preload("res://addons/airways_plugin/Airway3D.gd"), node_icon)
-	add_custom_type("AirAgent3D", "Node", preload("res://addons/airways_plugin/AirAgent3D.gd"), agentIcon)
+	add_custom_type("AirWays3D", "Node3D", airWay3D_node, node_icon)
+	add_custom_type("AirAgent3D", "Node", airAgent3D_node, agentIcon)
 	add_node_3d_gizmo_plugin(gizmo_handle)
 	
 	_make_visible(false)
@@ -71,25 +72,29 @@ func _create_Airways_control() -> HBoxContainer:
 	
 	var clear_btn: Button = Button.new()
 	clear_btn.text = "Clear Navigation Area"
-	clear_btn.icon = preload("res://addons/airways_plugin/icons/Clear.svg")
+	clear_btn.icon = preload("res://addons/airways_plugin/icons/icon_clear.svg")
 	clear_btn.flat = true
 	clear_btn.connect("pressed", Callable(self, "_on_clear_button_pressed"))
 	
 	var add_btn: Button = Button.new()
-	add_btn.icon = preload("res://addons/airways_plugin/icons/add_node.svg")
-	add_btn.tooltip_text = "Add a node to the region"
+	add_btn.icon = preload("res://addons/airways_plugin/icons/icon_add.svg")
+	add_btn.tooltip_text = "Add a node to the region (WIP)"
 	add_btn.toggle_mode = true
 	add_btn.flat = true
 	add_btn.connect("toggled", Callable(self, "_on_add_node_button_toggled"))
 	add_btn_ref = add_btn
 	
 	var delete_btn: Button = Button.new()
-	delete_btn.icon = preload("res://addons/airways_plugin/icons/remove_node.svg")
-	delete_btn.tooltip_text = "Delete a node from the existing ones"
+	delete_btn.icon = preload("res://addons/airways_plugin/icons/icon_remove.svg")
+	delete_btn.tooltip_text = "Delete a node from the existing ones (WIP)"
 	delete_btn.toggle_mode = true
 	delete_btn.flat = true
 	delete_btn.connect("toggled", Callable(self, "_on_delete_node_button_toggled"))
 	del_btn_ref = delete_btn
+	
+	#NOTE: disabling these two for now until i get the camera ray to work
+	add_btn.disabled = true 
+	delete_btn.disabled = true
 	
 	var test_btn: Button = Button.new()
 	test_btn.text = "test"

@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://5qi5kp8pue8p"]
 
 [ext_resource type="Script" path="res://addons/airways_plugin/demo/drone.gd" id="1_ysemj"]
-[ext_resource type="Script" path="res://addons/airways_plugin/AirAgent3D.gd" id="2_npr7p"]
+[ext_resource type="Script" path="res://addons/airways_plugin/scripts/AirAgent3D.gd" id="2_npr7p"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_4etjg"]
 
@@ -21,6 +21,7 @@ shape = SubResource("SphereShape3D_4etjg")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_oxnwa")
 
-[node name="AirAgent3D" type="Node" parent="." node_paths=PackedStringArray("parent")]
+[node name="AirAgent3D" type="Node" parent="."]
 script = ExtResource("2_npr7p")
-parent = NodePath("..")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]

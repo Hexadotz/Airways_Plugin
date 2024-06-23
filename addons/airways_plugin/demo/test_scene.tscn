@@ -1,8 +1,8 @@
 [gd_scene load_steps=28 format=3 uid="uid://c6ga3dueutfyr"]
 
 [ext_resource type="PackedScene" uid="uid://8ne0hnbdqku2" path="res://addons/airways_plugin/demo/debug_ghost.tscn" id="2_epmic"]
+[ext_resource type="Script" path="res://addons/airways_plugin/scripts/Airway3D.gd" id="3_jncas"]
 [ext_resource type="PackedScene" uid="uid://5qi5kp8pue8p" path="res://addons/airways_plugin/demo/drone.tscn" id="3_tua1o"]
-[ext_resource type="Script" path="res://addons/airways_plugin/Airway3D.gd" id="3_xwd3f"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_fxhwx"]
 size = Vector3(25, 1, 25)
@@ -290,12 +290,12 @@ mesh = SubResource("BoxMesh_0i5hn")
 skeleton = NodePath("../..")
 
 [node name="Drone" parent="." node_paths=PackedStringArray("navMap", "player") instance=ExtResource("3_tua1o")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.56374, 2.01187, -2.52702)
 navMap = NodePath("../AirWays3D")
 player = NodePath("../Misc/debug_ghost")
 
 [node name="AirWays3D" type="Node3D" parent="."]
-transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -5, 7, 0)
-script = ExtResource("3_xwd3f")
-size = Vector3(99, 21, 99)
-cell_size = 3.0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.8151, 0)
+script = ExtResource("3_jncas")
+size = Vector3(98, 28, 98)
+cell_size = 7.0

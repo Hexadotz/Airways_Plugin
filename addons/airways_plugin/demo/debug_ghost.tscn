@@ -8,3 +8,23 @@ script = ExtResource("1_8hc2w")
 [node name="head" type="Node3D" parent="."]
 
 [node name="Camera3D" type="Camera3D" parent="head"]
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="Control/CenterContainer"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2

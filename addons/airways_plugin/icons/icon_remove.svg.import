@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gt8mddw5usxv"
-path="res://.godot/imported/add_node.svg-4e51ba82ce20ce431d79db935a521172.ctex"
+uid="uid://x6ipy1117xu3"
+path="res://.godot/imported/icon_remove.svg-e6d1bc269df28915a5bd8b0bdef18924.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/airways_plugin/icons/add_node.svg"
-dest_files=["res://.godot/imported/add_node.svg-4e51ba82ce20ce431d79db935a521172.ctex"]
+source_file="res://addons/airways_plugin/icons/icon_remove.svg"
+dest_files=["res://.godot/imported/icon_remove.svg-e6d1bc269df28915a5bd8b0bdef18924.ctex"]
 
 [params]
 

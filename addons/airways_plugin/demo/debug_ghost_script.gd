@@ -4,7 +4,7 @@ extends CharacterBody3D
 const mouse_sen: float = 0.1
 
 var dir: Vector3 = Vector3.ZERO
-var speed: float = 15.0
+var speed: float = 20.0
 var levitaion_speed: float = 5.0
 
 var mouse_cap: bool = true
@@ -26,8 +26,9 @@ func _input(event: InputEvent) -> void:
 		var resault = space_state.intersect_ray(ray_param)
 		
 		if not resault.is_empty():
-			print("go to: ", resault["position"])
-			get_tree().call_group("drone", "move_to", resault["position"])
+			var pos: Vector3 = snapped(resault["position"], Vector3(0.1, 0.1, 0.1))
+			print("go to: ", pos)
+			get_tree().call_group("drone", "move_to", pos)
 
 
 func capture_mouse() -> void:
@@ -63,9 +64,9 @@ func _physics_process(delta: float) -> void:
 	dir = dir.normalized()
 	
 	if Input.is_action_pressed("sprint"):
-		speed = 30
+		speed = 50
 	else:
-		speed = 15
+		speed = 25
 	
 	velocity = dir * speed
 	

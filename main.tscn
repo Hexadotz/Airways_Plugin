@@ -1,9 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://qoi3yvwcrfo0"]
-
-[ext_resource type="Script" path="res://addons/airways_plugin/Airway3D.gd" id="1_jjx0t"]
-
-[node name="Main" type="Node3D"]
-
-[node name="AirWays3D" type="Node3D" parent="."]
-script = ExtResource("1_jjx0t")
-bidirectional = null
