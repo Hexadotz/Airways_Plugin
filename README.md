@@ -15,4 +15,4 @@ I will provide detailed documentation on usage in the future, but here's a basic
 
 
 ## Contributing
-I'm a dumbass and as such contributions are welcome! If you encounter issues or have suggestions for improvements, please submit an issue or pull request on the Airways3D GitHub repository.
+I'm a dumbass and as such contributions are welcome! If you encounter issues or have suggestions for improvements, please submit an issue or pull request.
