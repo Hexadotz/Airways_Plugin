@@ -25,71 +25,55 @@ class_name AirWays3D extends Node3D
 
 @onready var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 
+var DEBUG_SCRIPT = preload("res://addons/airways_plugin/scripts/visual_debug.gd").new()
+
 var toggled: bool = false
 #-------------points meshes-------------------------#
-var mesh_container: Node3D = Node3D.new()
 
-var _point_material: StandardMaterial3D = StandardMaterial3D.new()
-var _point_mesh: BoxMesh = BoxMesh.new()
+var bounding_box: MeshInstance3D = null
+var insert_box: MeshInstance3D = null
 
-var _bounding_box_meshInstance: MeshInstance3D = MeshInstance3D.new()
-var _bounding_box_material: StandardMaterial3D = StandardMaterial3D.new()
-var _bounding_box_mesh: BoxMesh = BoxMesh.new()
-
-var debug_box_ins: MeshInstance3D = MeshInstance3D.new()
-var debug_box_mat: StandardMaterial3D = StandardMaterial3D.new()
-var debug_mesh: BoxMesh = BoxMesh.new()
-
-var green_mat = StandardMaterial3D.new()
 #--------------------------------------------------------------#
 func _ready() -> void:
-	_point_mesh.size = Vector3(0.25, 0.25, 0.25)
-	_point_material.albedo_color = Color.RED
-	_point_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_point_material.disable_receive_shadows = true
+	DEBUG_SCRIPT.prep_debug_points()
 	
-	_bounding_box_material.albedo_color = bounding_box_color
-	_bounding_box_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_bounding_box_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_bounding_box_mesh.material = _bounding_box_material
-	_bounding_box_mesh.size = size
+	bounding_box = DEBUG_SCRIPT.prep_boundingBox()
+	add_child(bounding_box)
 	
-	_bounding_box_meshInstance.mesh = _bounding_box_mesh
-	
-	add_child(_bounding_box_meshInstance)
-	
-	#*------------------------------------*#
-	debug_box_mat.albedo_color = Color.AQUA
-	debug_mesh.size = Vector3(0.3, 0.3, 0.3)
-	debug_mesh.material = debug_box_mat
-	debug_box_ins.mesh = debug_mesh
-	
-	green_mat.albedo_color = Color.GREEN
-	green_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	
-	add_child(debug_box_ins)
+	#NOTE: finish working on this in the future, it's for the stupid node adding/deletion feature
+	#insert_box = DEBUG_SCRIPT.prep_insert_point()
+	#add_child(insert_box)
 	
 	if Engine.is_editor_hint():
 		editor_viewport = EditorInterface.get_editor_viewport_3d()
 		viewport_cam = EditorInterface.get_editor_viewport_3d().get_camera_3d()
-	
-	_load()
-	_connect_points(true)
+	else:
+		_load()
+		_connect_points(true)
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
+		#this is for clamping size andcell size, where the user shouldn't put a negative number, but can and will inevitably fuck the whole system which is already glued by hopes and dreams
 		size = snapped(size, Vector3(cell_size, cell_size, cell_size))
+		size = clamp(size, Vector3.ZERO, Vector3.INF)
+		cell_size = clamp(cell_size, 0, INF)
 		
-		_bounding_box_meshInstance.mesh.size = size
-		_bounding_box_material.albedo_color = bounding_box_color
+		bounding_box.mesh.size = size
 		
+		#TODO: implement this shit
 		if toggled:
-			_get_mouse_position_in_world()
-		
-		#if cell_size <= 0.5:
-		#	push_warning("Warning: cell sizes less than 0.5 causes unexpected behaviour")
+			#_get_mouse_position_in_world()
+			pass
 
-var point_conatiner: Node3D = Node3D.new()
+func _clear_debg_points() -> void:
+	DEBUG_SCRIPT.clear_points()
+	#also clear out the point dict
+	point_dict.clear()
+
+func _set_point_visible(value: bool) -> void:
+	DEBUG_SCRIPT.set_visibility(value)
+
+##spawns all points in the designated area and also spawn the debug cubes for visuals
 func _spawn_points() -> void:
 	var offset: Vector3 = Vector3(cell_size / 2, cell_size / 2, cell_size / 2) #this variables is made to set the offset so all of nodes are within the box
 	var aabb: AABB = AABB(-size / 2, size) * global_transform
@@ -115,16 +99,12 @@ func _spawn_points() -> void:
 				
 				if not _is_overlapping(_next_step):
 					#spawn the debug points
-					_spawn_debug_point(_next_step)
-				
-					#HACK:#we add the point location to an array for AStar poin connection
-					#point_list.append(_next_step)
-					#var id: int = Astar.get_available_point_id()
-					
+					var point_mesh: MeshInstance3D = DEBUG_SCRIPT.spawn_debug_point()
+					add_child(point_mesh)
+					point_mesh.global_position = _next_step
 					#adding the point to our AStar map
 					Astar.add_point(id, _next_step)
 					id += 1
-					
 					#add the point id to the dictionary with it's position being the key
 					point_dict[_vector3_to_key(_next_step)] = id
 	
@@ -164,25 +144,7 @@ func _is_overlapping(check_position: Vector3) -> bool: ##Returns true if the loc
 	return false
 
 #-------------------------------------------------------------------#
-func _spawn_debug_point(location: Vector3) -> void:
-	if show_debug_nodes:
-		var _point_meshInstance: MeshInstance3D = MeshInstance3D.new()
-		
-		_point_meshInstance.mesh = _point_mesh
-		_point_meshInstance.material_override = _point_material
-		
-		add_child(_point_meshInstance)
-		_point_meshInstance.global_position = location
-
-func _clear_debg_points() -> void:
-	#delete any existing node before spawning
-	for child in get_children():
-		if child != _bounding_box_meshInstance:
-			child.queue_free()
-	
-	#also clear out the point list
-	point_dict.clear()
-
+#once i unfuck my brain i will go back to this
 var ray_length: float = 20
 func _get_mouse_position_in_world() -> void:
 	if Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
@@ -193,7 +155,7 @@ func _get_mouse_position_in_world() -> void:
 		y_level = snappedf(y_level, cell_size)
 		to_point.y = y_level
 		
-		debug_box_ins.global_position = to_point
+		insert_box.global_position = to_point
 
 #---------------------AStar logic (aka get ready for ass pounding)----------------------#
 var point_dict: Dictionary = {}
@@ -243,12 +205,13 @@ func _connect_points(loaded: bool = false) -> void:
 							#print("connecting ",cur_id, " with ", next_id)
 							Astar.connect_points(cur_id, next_id, bidirectional)
 							
-							if get_child(cur_id) != _bounding_box_meshInstance and get_child(next_id) != _bounding_box_meshInstance:
-								#print("coloring")
-								get_child(cur_id).material_override = green_mat
-								get_child(next_id).material_override = green_mat
-							else:
-								print("worng")
+							#if get_child(cur_id) != _bounding_box_meshInstance and get_child(next_id) != _bounding_box_meshInstance:
+							#if get_child(cur_id) != bounding_box and get_child(next_id) != bounding_box:
+								##print("coloring")
+								#get_child(cur_id).material_override = green_mat
+								#get_child(next_id).material_override = green_mat
+							#else:
+								#print("worng")
 	
 	#saving the points that got baked
 	print_rich("[color=green]Points baked![b][/b][/color]")

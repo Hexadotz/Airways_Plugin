@@ -58,6 +58,7 @@ func set_control_disabled(visible: bool) -> void:
 
 var del_btn_ref: Button
 var add_btn_ref: Button
+var check_box_ref: CheckBox
 #creating a UI in the viewport editor, it's just a button for now
 func _create_Airways_control() -> HBoxContainer:
 	var Vert_sepA: VSeparator = VSeparator.new()
@@ -66,7 +67,7 @@ func _create_Airways_control() -> HBoxContainer:
 	var build_btn: Button = Button.new()
 	build_btn.text = "Build Navigation Area"
 	build_btn.icon = preload("res://addons/airways_plugin/icons/icon_build.svg")
-	build_btn.tooltip_text = "Build the navigation area by checking if each node point is not occupied by geometry"
+	build_btn.tooltip_text = "Construct the navigation area by verifying that each node point is not obstructed by geometry."
 	build_btn.flat = true
 	build_btn.connect("pressed", Callable(self, "_on_build_button_pressed"))
 	
@@ -78,7 +79,7 @@ func _create_Airways_control() -> HBoxContainer:
 	
 	var add_btn: Button = Button.new()
 	add_btn.icon = preload("res://addons/airways_plugin/icons/icon_add.svg")
-	add_btn.tooltip_text = "Add a node to the region (WIP)"
+	add_btn.tooltip_text = "Include a new node within the selected region (WIP)."
 	add_btn.toggle_mode = true
 	add_btn.flat = true
 	add_btn.connect("toggled", Callable(self, "_on_add_node_button_toggled"))
@@ -86,7 +87,7 @@ func _create_Airways_control() -> HBoxContainer:
 	
 	var delete_btn: Button = Button.new()
 	delete_btn.icon = preload("res://addons/airways_plugin/icons/icon_remove.svg")
-	delete_btn.tooltip_text = "Delete a node from the existing ones (WIP)"
+	delete_btn.tooltip_text = "Remove a node from those currently in the region (WIP)."
 	delete_btn.toggle_mode = true
 	delete_btn.flat = true
 	delete_btn.connect("toggled", Callable(self, "_on_delete_node_button_toggled"))
@@ -107,6 +108,11 @@ func _create_Airways_control() -> HBoxContainer:
 	var options: OptionButton = OptionButton.new()
 	options.add_item("option A")
 	
+	var visible_box: CheckBox = CheckBox.new()
+	visible_box.text = "Visible point"
+	visible_box.tooltip_text = "Toggle visibility of nodes in space."
+	check_box_ref = visible_box
+	visible_box.connect("pressed", Callable(self, "_on_visible_btn_pressed"))
 	
 	var container: HBoxContainer = HBoxContainer.new()
 	container.add_child(build_btn)
@@ -119,6 +125,7 @@ func _create_Airways_control() -> HBoxContainer:
 	
 	container.add_child(Vert_sepB)
 	
+	container.add_child(visible_box)
 	container.add_child(test_btn)
 	container.add_child(test_btn2)
 	#container.add_child(options)
@@ -133,9 +140,9 @@ func _apply_node_change(method: String, arg: Array = []) -> void:
 		return 
 	
 	if air_node.has_method(method):
-		air_node.call(method)
+		air_node.callv(method, arg)
 	elif air_node.get(method) != null:
-		air_node.set(method, arg[0])
+		air_node.set(method)
 	else:
 		push_error("Method/property does not exist")
 
@@ -153,6 +160,9 @@ func _on_delete_node_button_toggled(toggled_on: bool) -> void:
 func _on_add_node_button_toggled(toggled_on: bool) -> void:
 	del_btn_ref.button_pressed = false
 	_apply_node_change("toggled", [add_btn_ref.button_pressed])
+
+func _on_visible_btn_pressed() -> void:
+	_apply_node_change("_set_point_visible", [check_box_ref.button_pressed])
 
 func _on_test_btn_pressed() -> void:
 	_apply_node_change("test")

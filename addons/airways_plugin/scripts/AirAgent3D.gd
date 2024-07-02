@@ -21,6 +21,11 @@ signal target_reached
 func _ready() -> void:
 	pass
 
+func _physics_process(delta: float) -> void:
+	#if we have a target to go to, then go to him... fuck
+	if target != null:
+		pass
+
 ##Returns the next position in global coordinates that can be moved to
 func get_next_point() -> Vector3:
 	if navPathIndex < navPath.size():
