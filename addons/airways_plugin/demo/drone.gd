@@ -17,8 +17,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	
-	_new_move(delta)
-	#_old_move()
+	#_new_move(delta)
+	_old_move()
 	move_and_slide()
 
 func _new_move(delta: float) -> void:
@@ -37,6 +37,8 @@ func _old_move() -> void:
 			path_index += 1
 		else:
 			velocity = direction * speed
+	else:
+		velocity = Vector3.ZERO
 		
 
 func move_to(to_point: Vector3) -> void:

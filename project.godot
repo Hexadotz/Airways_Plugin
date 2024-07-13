@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Airways Plugin"
-config/tags=PackedStringArray("on_work")
+config/tags=PackedStringArray("on_work", "plugin")
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://addons/airways_plugin/icons/icon_AW.svg"
 
