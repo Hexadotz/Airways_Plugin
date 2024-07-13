@@ -5,11 +5,7 @@ class_name AirWays3D extends Node3D
 ##The size of the bounding box the nodes are going to spawn in NOTE: the size will snap acording to the cell size
 @export var size: Vector3 = Vector3(1, 1, 1)
 ##the distance between each node in the navigation area
-@export var cell_size: float = 1.0 
-##the bounding box color
-@export var bounding_box_color: Color = Color(1, 1, 0, 0.08)
-##disable the visibilty of the debug cubes that represent a node in the A* grip
-@export var show_debug_nodes: bool = true
+@export var cell_size: float = 1.0
 ##if the agent can tracel both ways (need to to rebake the points)
 @export var bidirectional: bool = true
 ##The physics layer the node scans, use this to execlude objects you don't want the node to consider "terrain"
@@ -87,8 +83,6 @@ func _spawn_points() -> void:
 	
 	_clear_debg_points()
 	
-	var id: int = 0
-	#print("children count before spawning: ", get_children().size() - 1)
 	#spawning the nodes, each for loop represent an axis we fill z then y than x
 	for x: float in x_steps:
 		for y: float in y_steps:
@@ -103,8 +97,9 @@ func _spawn_points() -> void:
 					add_child(point_mesh)
 					point_mesh.global_position = _next_step
 					#adding the point to our AStar map
+					var id: int = Astar.get_available_point_id()
 					Astar.add_point(id, _next_step)
-					id += 1
+					
 					#add the point id to the dictionary with it's position being the key
 					point_dict[_vector3_to_key(_next_step)] = id
 	
@@ -202,20 +197,16 @@ func _connect_points(loaded: bool = false) -> void:
 						
 						#if the poitns aren't connected we connect them
 						if not Astar.are_points_connected(cur_id, next_id):
-							#print("connecting ",cur_id, " with ", next_id)
 							Astar.connect_points(cur_id, next_id, bidirectional)
-							
-							#if get_child(cur_id) != _bounding_box_meshInstance and get_child(next_id) != _bounding_box_meshInstance:
-							#if get_child(cur_id) != bounding_box and get_child(next_id) != bounding_box:
-								##print("coloring")
-								#get_child(cur_id).material_override = green_mat
-								#get_child(next_id).material_override = green_mat
-							#else:
-								#print("worng")
 	
-	#saving the points that got baked
+	
+	#var dt = ""
+	#for pat in point_dict:
+		#dt += "id: " + str(point_dict[pat]) + str(Astar.get_point_connections(point_dict[pat])) + " / "
+	#
+	#_print_large("points saved to file", dt)
 	print_rich("[color=green]Points baked![b][/b][/color]")
-	#_save()
+	_save()
 
 func _load_points() -> void:
 	for point in point_dict:
@@ -227,10 +218,10 @@ func _load_points() -> void:
 func find_path(from_point: Vector3, to_point: Vector3) -> PackedVector3Array:
 	var start_id: int = Astar.get_closest_point(from_point)
 	var end_id: int = Astar.get_closest_point(to_point)
-	print("Start point id: ", start_id, " - End point id: ", end_id)
+	#print("Start point id: ", start_id, " - End point id: ", end_id)
 	
-	print("Start poin is connected to: ", Astar.get_point_connections(start_id))
-	print("End poin is connected to: ", Astar.get_point_connections(end_id))
+	#print("Start poin is connected to: ", Astar.get_point_connections(start_id))
+	#print("End poin is connected to: ", Astar.get_point_connections(end_id))
 	
 	var resault: PackedVector3Array = Astar.get_point_path(start_id, end_id)
 	return resault

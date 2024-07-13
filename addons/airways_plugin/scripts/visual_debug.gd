@@ -68,3 +68,5 @@ func clear_points() -> void:
 	if not point_list.is_empty():
 		for mesh: MeshInstance3D in point_list:
 			mesh.queue_free()
+	#clear out the list after deleting the points
+	point_list.clear()

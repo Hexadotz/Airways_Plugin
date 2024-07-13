@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 @onready var cam: Camera3D = $head/Camera3D
+@onready var point_mesh: MeshInstance3D = $pointer
 const mouse_sen: float = 0.1
 
 var dir: Vector3 = Vector3.ZERO
@@ -28,6 +29,7 @@ func _input(event: InputEvent) -> void:
 		if not resault.is_empty():
 			var pos: Vector3 = snapped(resault["position"], Vector3(0.1, 0.1, 0.1))
 			print("go to: ", pos)
+			point_mesh.global_position = pos
 			get_tree().call_group("drone", "move_to", pos)
 
 

@@ -11,9 +11,10 @@ albedo_color = Color(0, 0.633333, 1, 1)
 [sub_resource type="SphereMesh" id="SphereMesh_oxnwa"]
 material = SubResource("StandardMaterial3D_c5p3p")
 
-[node name="Drone" type="CharacterBody3D" groups=["drone"]]
+[node name="Drone" type="CharacterBody3D" node_paths=PackedStringArray("navAgent") groups=["drone"]]
 motion_mode = 1
 script = ExtResource("1_ysemj")
+navAgent = NodePath("AirAgent3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("SphereShape3D_4etjg")
@@ -23,5 +24,3 @@ mesh = SubResource("SphereMesh_oxnwa")
 
 [node name="AirAgent3D" type="Node" parent="."]
 script = ExtResource("2_npr7p")
-
-[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]

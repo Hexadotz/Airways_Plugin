@@ -1,5 +1,6 @@
-[gd_scene load_steps=28 format=3 uid="uid://c6ga3dueutfyr"]
+[gd_scene load_steps=29 format=3 uid="uid://c6ga3dueutfyr"]
 
+[ext_resource type="Script" path="res://addons/airways_plugin/demo/test_script.gd" id="1_prabu"]
 [ext_resource type="PackedScene" uid="uid://8ne0hnbdqku2" path="res://addons/airways_plugin/demo/debug_ghost.tscn" id="2_epmic"]
 [ext_resource type="Script" path="res://addons/airways_plugin/scripts/Airway3D.gd" id="3_jncas"]
 [ext_resource type="PackedScene" uid="uid://5qi5kp8pue8p" path="res://addons/airways_plugin/demo/drone.tscn" id="3_tua1o"]
@@ -72,13 +73,14 @@ sky = SubResource("Sky_4y2lv")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_riwcu"]
 shading_mode = 0
-albedo_color = Color(4.81307e-07, 0.486827, 0.451548, 1)
+albedo_color = Color(0, 1, 0.933333, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_0i5hn"]
 material = SubResource("StandardMaterial3D_riwcu")
 size = Vector3(0.3, 0.3, 0.3)
 
 [node name="test_scene" type="Node3D"]
+script = ExtResource("1_prabu")
 
 [node name="mesh_convex" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -5, 0)
@@ -285,16 +287,16 @@ shadow_enabled = true
 transform = Transform3D(-1, 0, -9.68575e-08, 0, 1, 0, 9.68575e-08, 0, -1, 0, 7, -24)
 
 [node name="debugger_mesh" type="MeshInstance3D" parent="Misc"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4589, 1.7063, -13.7278)
 mesh = SubResource("BoxMesh_0i5hn")
 skeleton = NodePath("../..")
 
-[node name="Drone" parent="." node_paths=PackedStringArray("player") instance=ExtResource("3_tua1o")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.56374, 2.01187, -2.52702)
-player = NodePath("../Misc/debug_ghost")
+[node name="Drone" parent="." node_paths=PackedStringArray("navMap") instance=ExtResource("3_tua1o")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.56374, 2.01187, -10.598)
+navMap = NodePath("../AirWays3D")
 
 [node name="AirWays3D" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5.01486)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -13.7787)
 script = ExtResource("3_jncas")
-size = Vector3(6, 6, 6)
+size = Vector3(16, 8, 16)
 cell_size = 2.0
