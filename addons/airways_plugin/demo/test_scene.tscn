@@ -288,15 +288,17 @@ transform = Transform3D(-1, 0, -9.68575e-08, 0, 1, 0, 9.68575e-08, 0, -1, 0, 7, 
 
 [node name="debugger_mesh" type="MeshInstance3D" parent="Misc"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4589, 1.7063, -13.7278)
+visible = false
 mesh = SubResource("BoxMesh_0i5hn")
 skeleton = NodePath("../..")
 
-[node name="Drone" parent="." node_paths=PackedStringArray("navMap") instance=ExtResource("3_tua1o")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.56374, 2.01187, -10.598)
+[node name="Drone" parent="." node_paths=PackedStringArray("navMap", "player") instance=ExtResource("3_tua1o")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.2531, 2.01187, 1.14895)
 navMap = NodePath("../AirWays3D")
+player = NodePath("../Misc/debug_ghost")
 
 [node name="AirWays3D" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.26264, 0, -13.7787)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -13)
 script = ExtResource("3_jncas")
-size = Vector3(20, 8, 20)
-cell_size = 2.0
+size = Vector3(32, 12, 32)
+cell_size = 4.0

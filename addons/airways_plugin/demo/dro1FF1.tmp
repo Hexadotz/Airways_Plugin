@@ -22,5 +22,5 @@ shape = SubResource("SphereShape3D_4etjg")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_oxnwa")
 
-[node name="AirAgent3D" type="Node3D" parent="."]
+[node name="AirAgent3D" type="Node" parent="."]
 script = ExtResource("2_npr7p")

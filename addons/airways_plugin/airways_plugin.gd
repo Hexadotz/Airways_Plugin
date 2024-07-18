@@ -18,7 +18,7 @@ func _enter_tree() -> void:
 	
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, editor_UI)
 	add_custom_type("AirWays3D", "Node3D", airWay3D_node, node_icon)
-	add_custom_type("AirAgent3D", "Node", airAgent3D_node, agentIcon)
+	add_custom_type("AirAgent3D", "Node3D", airAgent3D_node, agentIcon)
 	add_node_3d_gizmo_plugin(gizmo_handle)
 	
 	_make_visible(false)
@@ -111,6 +111,7 @@ func _create_Airways_control() -> HBoxContainer:
 	var visible_box: CheckBox = CheckBox.new()
 	visible_box.text = "Visible point"
 	visible_box.tooltip_text = "Toggle visibility of nodes in space."
+	visible_box.button_pressed = true
 	check_box_ref = visible_box
 	visible_box.connect("pressed", Callable(self, "_on_visible_btn_pressed"))
 	

@@ -18,12 +18,11 @@ class_name AirWays3D extends Node3D
 @onready var _editor_viewport: Viewport = null
 @onready var _viewport_cam: Camera3D = null
 
-@onready var point_container
-
 @onready var _space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 
 var _DEBUG_SCRIPT = preload("res://addons/airways_plugin/scripts/visual_debug.gd").new()
 
+var _visible_points: bool = true
 var _toggled: bool = false
 #-------------points meshes-------------------------#
 
@@ -71,6 +70,7 @@ func _clear_debg_points() -> void:
 
 func _set_point_visible(value: bool) -> void:
 	_DEBUG_SCRIPT.set_visibility(value)
+	_visible_points = value
 
 ##spawns all points in the designated area and also spawn the debug cubes for visuals
 func _spawn_points() -> void:
@@ -98,6 +98,7 @@ func _spawn_points() -> void:
 					#spawn the debug points
 					var point_mesh: MeshInstance3D = _DEBUG_SCRIPT.spawn_debug_point()
 					add_child(point_mesh)
+					point_mesh.visible = _visible_points
 					point_mesh.global_position = _next_step
 					#adding the point to our _Astar map
 					var id: int = _Astar.get_available_point_id()

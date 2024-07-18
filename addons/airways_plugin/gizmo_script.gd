@@ -17,9 +17,9 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	var handles: PackedVector3Array = PackedVector3Array()
 	
 	#top_handel
-	handles.push_back(Vector3(0, node3d.bounding_box.mesh.size.y / 2, 0))
+	handles.push_back(Vector3(0, node3d._bounding_box.mesh.size.y / 2, 0))
 	#side handel
-	handles.push_back(Vector3(0, 0, node3d.bounding_box.mesh.size.z / 2))
+	handles.push_back(Vector3(0, 0, node3d._bounding_box.mesh.size.z / 2))
 	
 	gizmo.add_handles(handles, get_material("handles", gizmo), [0,1])
 
