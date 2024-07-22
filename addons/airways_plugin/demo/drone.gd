@@ -1,16 +1,10 @@
 extends CharacterBody3D
 
 @export var navMap: AirWays3D
-@export var target_distance: float = 0.1
 @export var navAgent: AirAgent3D
-
 @export var player: CharacterBody3D
 
-var navPath: Array = []
-var path_index: int = 0
-var follow_target: bool = false
-
-const speed = 2
+const speed: int = 15
 #----------------------------------------------------#
 func _ready() -> void:
 	pass
@@ -24,11 +18,7 @@ func _physics_process(delta: float) -> void:
 
 func _new_move(delta: float) -> void:
 	var direction: Vector3 = global_position.direction_to(navAgent.get_next_point())
-	velocity = direction * speed
+	velocity = lerp(velocity, direction * speed, 3 * delta)
 
-func move_to(to_point: Vector3) -> void:
-	navAgent.target_position = to_point
-	#navAgent.navPath = navAgent.navNode.find_path(global_position, navAgent.target_position)
-	#navAgent.navPathIndex = 0
-	
-	print("Size: ",navAgent.navPath.size(), " Path: ", navAgent.navPath)
+func _on_air_agent_3d_target_reached() -> void:
+	print("got you fucker")

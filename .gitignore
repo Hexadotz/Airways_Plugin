@@ -16,3 +16,7 @@ mono_crash.*.json
 
 #project specifique ignores
 addons/godot-jolt/
+addons/airways_plugin/demo
+icon.svg
+icon.svg.import
+project.godot

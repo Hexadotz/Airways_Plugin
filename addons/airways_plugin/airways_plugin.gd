@@ -109,7 +109,7 @@ func _create_Airways_control() -> HBoxContainer:
 	options.add_item("option A")
 	
 	var visible_box: CheckBox = CheckBox.new()
-	visible_box.text = "Visible point"
+	visible_box.text = "Visible Nodes"
 	visible_box.tooltip_text = "Toggle visibility of nodes in space."
 	visible_box.button_pressed = true
 	check_box_ref = visible_box
@@ -127,8 +127,8 @@ func _create_Airways_control() -> HBoxContainer:
 	container.add_child(Vert_sepB)
 	
 	container.add_child(visible_box)
-	container.add_child(test_btn)
-	container.add_child(test_btn2)
+	#container.add_child(test_btn)
+	#container.add_child(test_btn2)
 	#container.add_child(options)
 	
 	return container

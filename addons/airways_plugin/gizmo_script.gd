@@ -1,5 +1,6 @@
 extends EditorNode3DGizmoPlugin
 
+
 func _get_gizmo_name() -> String:
 	return "Airways3D Handels"
 
@@ -20,8 +21,9 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	handles.push_back(Vector3(0, node3d._bounding_box.mesh.size.y / 2, 0))
 	#side handel
 	handles.push_back(Vector3(0, 0, node3d._bounding_box.mesh.size.z / 2))
+	handles.push_back(Vector3(node3d._bounding_box.mesh.size.z / 2, 0, 0))
 	
-	gizmo.add_handles(handles, get_material("handles", gizmo), [0,1])
+	gizmo.add_handles(handles, get_material("handles", gizmo), [0,1,2])
 
 func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, camera: Camera3D, screen_pos: Vector2) -> void:
 	pass
