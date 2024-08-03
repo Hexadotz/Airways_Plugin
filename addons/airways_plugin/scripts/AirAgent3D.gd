@@ -4,6 +4,12 @@ class_name AirAgent3D extends Node3D
 
 ##A 3D agent that is used to avigate the space provided by [AirWays3D]
 
+enum node_ref{
+	closest, ##When the game launches the agent will get reference to the closest AirWays node in the scene
+	closest_to_target, ##When the game launches the agent will get reference to the airways node that is the closest to the target position, meaning it will request path from different airways nodes in the scene [br][b]NOTE:[/b]The agent might get stuck in geometry if the distance between the two airways node is longer
+}
+@export var Navigation_Node: node_ref ##Determines the way the navigation agent get reference to the Airways node
+
 @export_subgroup("Debugging")
 @export var debug_on: bool = false
 
@@ -38,9 +44,31 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if _all_clear:
+		_get_navnode()
 		_build_path()
 		if _navPathIndex < _navPath.size():
 			shape_inst.global_position = _navPath[_navPathIndex]
+
+#TODO: now this is a whole ass new problem, since the target position updates every frame we get a new path every frame as well lol
+#NOTE: I don't know how this works or why it work but i'm not going to touch it
+func _build_path() -> void:
+	if navNode != null:
+		if target_position != Vector3.INF:
+			_navPath = navNode.find_path(global_position, target_position)
+		else:
+			push_warning("There is no target point set")
+	else:
+		push_warning("There is no navigation space")
+
+#NOTE: this is also shit but it's a bi better than wtf i was doing earlier
+@onready var nodeList: Array = get_tree().get_nodes_in_group("AirNav")
+func _get_navnode() -> void:
+	if nodeList.size() > 0:
+		navNode = nodeList[0]
+		for airNode: AirWays3D in nodeList:
+			var distance = navNode._Astar.get_point_position(navNode._Astar.get_closest_point(target_position))
+			if target_position.distance_to(airNode.global_position) < airNode.navigation_space.size.length():
+				navNode = airNode
 
 #------------------------------------------------------------------------------#
 ##Returns the next position in global coordinates that can be moved to
@@ -86,14 +114,3 @@ func get_last_position() -> Vector3:
 	else:
 		push_warning("The _navPath is empty")
 		return global_position
-
-#TODO: now this is a whole ass new problem, since the target position updates every frame we get a new path every frame as well lol
-#NOTE: ok somehow someway it works all i did was comment the line that sets the navpathIndex to 0 and the damn thing works now, just like that... shit
-func _build_path() -> void:
-	if navNode != null:
-		if target_position != Vector3.INF:
-			_navPath = navNode.find_path(global_position, target_position)
-		else:
-			push_warning("There is no target point set")
-	else:
-		push_warning("There is no navigation space")

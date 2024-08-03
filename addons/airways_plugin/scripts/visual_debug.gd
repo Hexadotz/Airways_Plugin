@@ -11,10 +11,16 @@ var green_mat = StandardMaterial3D.new()
 
 #hold all the refrences to the points meshes
 var point_list: Array[MeshInstance3D] = []
+#---------------multimesh preperatin-----------#
+var multiMesher: MultiMeshInstance3D = MultiMeshInstance3D.new()
+var mesher: MultiMesh = MultiMesh.new()
+
 #-----------------------------------------------#
 func _ready() -> void:
 	green_mat.albedo_color = Color.GREEN
 	green_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	
+	
 
 func prep_boundingBox() -> MeshInstance3D:
 	var _bounding_box_meshInstance: MeshInstance3D = MeshInstance3D.new()
@@ -39,35 +45,51 @@ func prep_insert_point() -> MeshInstance3D:
 	
 	return debug_box_ins
 
-func prep_debug_points() -> void:
+func prep_debug_points() -> BoxMesh:
+	_point_mesh.size = Vector3(0.25, 0.25, 0.25)
+	_point_material.albedo_color = Color.RED
+	_point_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_point_mesh.material = _point_material
+	
+	return _point_mesh
+
+#---------------------------------------------------------------------#
+func prep_multiMesh(list: PackedVector3Array) -> MultiMeshInstance3D:
+	# first setup the point mesh that we're going to render
 	_point_mesh.size = Vector3(0.25, 0.25, 0.25)
 	_point_material.albedo_color = Color.RED
 	_point_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_point_material.disable_receive_shadows = true
-
-func spawn_debug_point() -> MeshInstance3D:
-	#if show_debug_nodes:
-	var _point_meshInstance: MeshInstance3D = MeshInstance3D.new()
 	
-	_point_meshInstance.mesh = _point_mesh
-	_point_meshInstance.material_override = _point_material
+	#now setup the MultiMesh resource
+	mesher.mesh = _point_mesh
+	mesher.transform_format = MultiMesh.TRANSFORM_3D
+	mesher.use_colors = true
 	
-	point_list.append(_point_meshInstance)
-	return _point_meshInstance
-
-#this is ugly and stupid but it works
-func set_visibility(is_visible: bool = true):
-	if not point_list.is_empty():
-		for mesh: MeshInstance3D in point_list:
-			mesh.visible = is_visible
-	else:
-		if is_visible:
-			push_warning("There are no points baked")
-
-func clear_points() -> void:
-	if not point_list.is_empty():
-		for mesh: MeshInstance3D in point_list:
-			mesh.queue_free()
+	mesher.instance_count = list.size()
 	
-	#clear out the list after deleting the points
-	point_list.clear()
+	for indx: int in list.size() - 1:
+		mesher.set_instance_transform(indx, Transform3D(Basis(), list[indx]))
+	
+	
+	# finally assgin the multiMesh resource to the multiMeshInstance to render them all
+	multiMesher.multimesh = mesher
+	
+	return multiMesher
+
+
+
+func _update_MultiMesh(meshOrigin: Vector3, list: PackedVector3Array) -> MultiMesh:
+	if mesher.instance_count > 0:
+		mesher.instance_count = 0
+	
+	mesher.transform_format = MultiMesh.TRANSFORM_3D
+	mesher.mesh = prep_debug_points()
+	mesher.use_colors = true
+	
+	mesher.instance_count = list.size()
+	
+	for indx: int in list.size() - 1:
+		mesher.set_instance_transform(indx, Transform3D(Basis(), meshOrigin - list[indx])) #NOTE: this is probably fucking things up
+	
+	return mesher

@@ -21,4 +21,4 @@ func _new_move(delta: float) -> void:
 	velocity = lerp(velocity, direction * speed, 3 * delta)
 
 func _on_air_agent_3d_target_reached() -> void:
-	print("got you fucker")
+	pass

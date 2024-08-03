@@ -25,4 +25,6 @@ mesh = SubResource("SphereMesh_oxnwa")
 [node name="AirAgent3D" type="Node3D" parent="."]
 script = ExtResource("2_npr7p")
 
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
 [connection signal="target_reached" from="AirAgent3D" to="." method="_on_air_agent_3d_target_reached"]
