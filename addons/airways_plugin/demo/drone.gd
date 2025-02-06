@@ -13,12 +13,12 @@ func _physics_process(delta: float) -> void:
 	navAgent.target_position = player.global_position
 	
 	#--------------------------#
-	_new_move(delta)
+	_move(delta)
 	move_and_slide()
 
-func _new_move(delta: float) -> void:
+func _move(delta: float) -> void:
 	var direction: Vector3 = global_position.direction_to(navAgent.get_next_point())
 	velocity = lerp(velocity, direction * speed, 3 * delta)
 
 func _on_air_agent_3d_target_reached() -> void:
-	pass
+	print("target reached!")

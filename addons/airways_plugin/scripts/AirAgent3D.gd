@@ -61,8 +61,8 @@ func _build_path() -> void:
 		push_warning("There is no navigation space")
 
 #NOTE: this is also shit but it's a bi better than wtf i was doing earlier
-@onready var nodeList: Array = get_tree().get_nodes_in_group("AirNav")
 func _get_navnode() -> void:
+	var nodeList: Array = get_tree().get_nodes_in_group("AirNav")
 	if nodeList.size() > 0:
 		navNode = nodeList[0]
 		for airNode: AirWays3D in nodeList:

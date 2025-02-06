@@ -19,8 +19,6 @@ var mesher: MultiMesh = MultiMesh.new()
 func _ready() -> void:
 	green_mat.albedo_color = Color.GREEN
 	green_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	
-	
 
 func prep_boundingBox() -> MeshInstance3D:
 	var _bounding_box_meshInstance: MeshInstance3D = MeshInstance3D.new()
@@ -54,31 +52,6 @@ func prep_debug_points() -> BoxMesh:
 	return _point_mesh
 
 #---------------------------------------------------------------------#
-func prep_multiMesh(list: PackedVector3Array) -> MultiMeshInstance3D:
-	# first setup the point mesh that we're going to render
-	_point_mesh.size = Vector3(0.25, 0.25, 0.25)
-	_point_material.albedo_color = Color.RED
-	_point_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_point_material.disable_receive_shadows = true
-	
-	#now setup the MultiMesh resource
-	mesher.mesh = _point_mesh
-	mesher.transform_format = MultiMesh.TRANSFORM_3D
-	mesher.use_colors = true
-	
-	mesher.instance_count = list.size()
-	
-	for indx: int in list.size() - 1:
-		mesher.set_instance_transform(indx, Transform3D(Basis(), list[indx]))
-	
-	
-	# finally assgin the multiMesh resource to the multiMeshInstance to render them all
-	multiMesher.multimesh = mesher
-	
-	return multiMesher
-
-
-
 func _update_MultiMesh(meshOrigin: Vector3, list: PackedVector3Array) -> MultiMesh:
 	if mesher.instance_count > 0:
 		mesher.instance_count = 0
@@ -89,7 +62,8 @@ func _update_MultiMesh(meshOrigin: Vector3, list: PackedVector3Array) -> MultiMe
 	
 	mesher.instance_count = list.size()
 	
-	for indx: int in list.size() - 1:
-		mesher.set_instance_transform(indx, Transform3D(Basis(), meshOrigin - list[indx])) #NOTE: this is probably fucking things up
+	for indx: int in list.size():
+		var local_position: Vector3 = list[indx] - meshOrigin # convert those position to local
+		mesher.set_instance_transform(indx, Transform3D(Basis(), local_position)) #NOTE: this is probably fucking things up
 	
-	return mesher
+	return mesher 
